@@ -39,9 +39,27 @@ app.post("/api/persons", (req, res) => {
         number
     };
 
-    persons = [...persons, newPerson];
+    // Error Handler IF NAME OR NUMBER IS MISSING
+    if (!name) {
+        res.status(404).json({ error: "Name is missing." });
+    } else if (!number) {
+        res.status(404).json({ error: "Number is missing." });
+    } else {
 
-    res.json(persons);
+        // Error Handler IF NAME ALREADY EXISTS
+        const findPerson = persons.find(person => person.name === name);
+        console.log(findPerson);
+
+        if (findPerson) {
+            res.status(404).json({ error: "Name must be unique." });
+        } else {
+            persons = [...persons, newPerson];
+            
+            res.json(persons);
+        }
+    }
+
+
 
 });
 
