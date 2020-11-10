@@ -29,16 +29,26 @@ app.get("/api/persons", (req, res) => {
 });
 
 app.get("/api/persons/:id", (req, res) => {
-    const id = req.params.id;
+    const id = Number(req.params.id);
 
-    const person = persons.find(person => person.id === Number(id));
+    const person = persons.find(person => person.id === id);
 
     if (person) {
         res.json(person);
     } else {
         res.status(404).end();
     }
+});
 
+app.delete("/api/persons/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const person = persons.find(person => person.id === id);
+
+    if (!person) {
+        res.status(404).end();
+    } else {
+        res.json([...persons.filter(person => person.id !== id)]);
+    }
 });
 
 app.get("/info", (req, res) => {
