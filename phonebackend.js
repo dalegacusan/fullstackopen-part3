@@ -26,8 +26,14 @@ app.get("/", (req, res) => {
 
 app.get("/api/persons", (req, res) => {
     res.json(persons);
-})
+});
+
+app.get("/info", (req, res) => {
+    res.send(
+        `<div><p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p></div>`
+    );
+});
 
 app.listen(PORT, () => {
     console.log(`Server started at http://localhost:${PORT}`);
-})
+});
