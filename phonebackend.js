@@ -51,15 +51,15 @@ app.post("/api/persons", (req, res) => {
         console.log(findPerson);
 
         if (findPerson) {
-            res.status(404).json({ error: "Name must be unique." });
+            // 409 - Conflict
+            res.status(409).json({ error: "Name must be unique." });
         } else {
             persons = [...persons, newPerson];
-            
+
             res.json(persons);
         }
+
     }
-
-
 
 });
 
@@ -71,7 +71,8 @@ app.get("/api/persons/:id", (req, res) => {
     if (person) {
         res.json(person);
     } else {
-        res.status(404).end();
+        // 204 - No Content
+        res.status(204).end();
     }
 });
 
@@ -79,10 +80,11 @@ app.delete("/api/persons/:id", (req, res) => {
     const id = Number(req.params.id);
     const person = persons.find(person => person.id === id);
 
-    if (!person) {
-        res.status(404).end();
-    } else {
+    if (person) {
         res.json([...persons.filter(person => person.id !== id)]);
+    } else {
+        // 204 - No Content
+        res.status(204).end();
     }
 });
 
