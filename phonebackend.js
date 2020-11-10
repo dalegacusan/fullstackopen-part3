@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-const persons = [
+app.use(express.json());
+
+let persons = [
     {
         id: 1,
         name: "Arto Hellas",
@@ -26,6 +28,21 @@ app.get("/", (req, res) => {
 
 app.get("/api/persons", (req, res) => {
     res.json(persons);
+});
+
+app.post("/api/persons", (req, res) => {
+    const { name, number } = req.body;
+
+    const newPerson = {
+        id: Math.random() * 100000,
+        name,
+        number
+    };
+
+    persons = [...persons, newPerson];
+
+    res.json(persons);
+
 });
 
 app.get("/api/persons/:id", (req, res) => {
