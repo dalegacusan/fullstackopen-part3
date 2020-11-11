@@ -1,8 +1,25 @@
 const express = require('express');
 const app = express();
+const morgan = require('morgan');
 const PORT = 3000;
 
 app.use(express.json());
+
+// const requestLogger = (req, res, next) => {
+//     console.log('Method:', req.method);
+//     console.log('Path:  ', req.path);
+//     console.log('Body:  ', req.body);
+//     console.log('---');
+//     next();
+// }
+
+// const unknownEndpoint = (req, res) => {
+//     res.status(404).send({ error: 'unknown endpoint' });
+// }
+
+// app.use(requestLogger);
+
+app.use(morgan('tiny'));
 
 let persons = [
     {
@@ -24,6 +41,12 @@ let persons = [
 
 app.get("/", (req, res) => {
     res.send("Succesfully here!");
+});
+
+app.get("/info", (req, res) => {
+    res.send(
+        `<div><p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p></div>`
+    );
 });
 
 app.get("/api/persons", (req, res) => {
@@ -48,7 +71,6 @@ app.post("/api/persons", (req, res) => {
 
         // Error Handler IF NAME ALREADY EXISTS
         const findPerson = persons.find(person => person.name === name);
-        console.log(findPerson);
 
         if (findPerson) {
             // 409 - Conflict
@@ -88,11 +110,7 @@ app.delete("/api/persons/:id", (req, res) => {
     }
 });
 
-app.get("/info", (req, res) => {
-    res.send(
-        `<div><p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p></div>`
-    );
-});
+// app.use(unknownEndpoint);
 
 app.listen(PORT, () => {
     console.log(`Server started at http://localhost:${PORT}`);
