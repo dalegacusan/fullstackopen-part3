@@ -5,21 +5,15 @@ const PORT = 3000;
 
 app.use(express.json());
 
-// const requestLogger = (req, res, next) => {
-//     console.log('Method:', req.method);
-//     console.log('Path:  ', req.path);
-//     console.log('Body:  ', req.body);
-//     console.log('---');
-//     next();
-// }
+morgan.token('data', (req, res) => {
+    if (req.method === "POST") {
+        return JSON.stringify(req.body);
+    } else {
+        return null;
+    }
+});
 
-// const unknownEndpoint = (req, res) => {
-//     res.status(404).send({ error: 'unknown endpoint' });
-// }
-
-// app.use(requestLogger);
-
-app.use(morgan('tiny'));
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'));
 
 let persons = [
     {
@@ -109,8 +103,6 @@ app.delete("/api/persons/:id", (req, res) => {
         res.status(204).end();
     }
 });
-
-// app.use(unknownEndpoint);
 
 app.listen(PORT, () => {
     console.log(`Server started at http://localhost:${PORT}`);
