@@ -1,8 +1,9 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
-const PORT = 3000;
+const cors = require('cors');
 
+app.use(cors());
 app.use(express.json());
 
 morgan.token('data', (req, res) => {
@@ -30,6 +31,11 @@ let persons = [
         id: 3,
         name: "Dan Abramov",
         number: "120-123346"
+    },
+    {
+        id: 4,
+        name: "John Doe",
+        number: "220-1234346"
     }
 ];
 
@@ -104,6 +110,7 @@ app.delete("/api/persons/:id", (req, res) => {
     }
 });
 
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Server started at http://localhost:${PORT}`);
+    console.log(`Server started at Port ${PORT}`);
 });
