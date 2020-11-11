@@ -1,1 +1,1 @@
-web: node phonebackend.js
+web: npm start
