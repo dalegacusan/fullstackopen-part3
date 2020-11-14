@@ -1,7 +1,24 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
+const mongoose = require('mongoose');
+
+const DB_NAME = process.env.MONGO_DB_NAME;
+const DB_PASSWORD = process.env.MONGO_DB_PASSWORD;
+const URL = `mongodb+srv://phonebook-app:${DB_PASSWORD}@cluster0.87rwo.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
+
+mongoose.connect(URL, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true }).then(() => {
+    console.log("Successful Connection");
+});
+
+const personSchema = new mongoose.Schema({
+    name: String,
+    number: String
+});
+
+const Person = mongoose.model('Person', personSchema);
 
 /*
     Static Folder is like a "route"
@@ -24,7 +41,6 @@ morgan.token('data', (req, res) => {
         return null;
     }
 });
-
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'));
 
 let persons = [
@@ -61,7 +77,11 @@ app.get("/info", (req, res) => {
 });
 
 app.get("/api/persons", (req, res) => {
-    res.json(persons);
+    Person.find({}).then(result => {
+        res.json(result);
+
+        mongoose.connection.close();
+    });
 });
 
 app.post("/api/persons", (req, res) => {

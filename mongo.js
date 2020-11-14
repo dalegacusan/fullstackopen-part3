@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const DB_PASSWORD = process.argv[2];
-const URL = `mongodb+srv://phonebook-app:${DB_PASSWORD}@cluster0.87rwo.mongodb.net/<dbname>?retryWrites=true&w=majority`;
+const URL = `mongodb+srv://phonebook-app:${DB_PASSWORD}@cluster0.87rwo.mongodb.net/phonebook?retryWrites=true&w=majority`;
 
 /*
                     node mongo.js <password> <NAME> <PHONE NUMBER>
