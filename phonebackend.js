@@ -105,7 +105,7 @@ app.delete("/api/persons/:id", (req, res) => {
                 if (err) {
                     res.json({ error: "An error has occured in deleting" });
                 } else {
-                    console.log("Successful Deletion");
+                    res.json(person);
                 }
             });
         } else {
@@ -113,6 +113,7 @@ app.delete("/api/persons/:id", (req, res) => {
             res.status(204).end();
         }
     });
+
 });
 
 const PORT = process.env.PORT;
