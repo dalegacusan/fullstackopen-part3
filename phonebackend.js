@@ -28,45 +28,27 @@ morgan.token('data', (req, res) => {
 });
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'));
 
-let persons = [
-    {
-        id: 1,
-        name: "Arto Hellas",
-        number: "040-123456"
-    },
-    {
-        id: 2,
-        name: "Ada Lovelace",
-        number: "010-213436"
-    },
-    {
-        id: 3,
-        name: "Dan Abramov",
-        number: "120-123346"
-    },
-    {
-        id: 4,
-        name: "John Doe",
-        number: "220-1234346"
-    }
-];
-
 app.get("/", (req, res) => {
     res.send("Succesfully here!");
 });
 
+// WORKING
 app.get("/info", (req, res) => {
-    res.send(
-        `<div><p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p></div>`
-    );
+    Person.find({}).then(people => {
+        res.send(
+            `<div><p>Phonebook has info for ${people.length} people</p><p>${new Date()}</p></div>`
+        );
+    });
 });
 
+// WORKING
 app.get("/api/persons", (req, res) => {
     Person.find({}).then(result => {
         res.json(result);
     });
 });
 
+// WORKING
 app.post("/api/persons", (req, res) => {
     const { name, number } = req.body;
 
@@ -81,24 +63,23 @@ app.post("/api/persons", (req, res) => {
     } else if (!number) {
         res.status(404).json({ error: "Number is missing." });
     } else {
-
         // Error Handler IF NAME ALREADY EXISTS
-        const findPerson = persons.find(person => person.name === name);
-
-        if (findPerson) {
-            // 409 - Conflict
-            res.status(409).json({ error: "Name must be unique." });
-        } else {
-            newPerson.save().then((savedPerson) => {
-                // savedPerson returns the document saved
-                res.json(savedPerson);
-            });
-        }
+        Person.find({ name: name }).then(person => {
+            if (person.length > 0) {
+                res.status(409).json({ error: "Name must be unique." });
+            } else {
+                newPerson.save().then((savedPerson) => {
+                    // savedPerson returns the document saved
+                    res.json(savedPerson);
+                });
+            }
+        });
 
     }
 
 });
 
+// WORKING
 app.get("/api/persons/:id", (req, res) => {
     const id = req.params.id;
 
@@ -114,6 +95,7 @@ app.get("/api/persons/:id", (req, res) => {
         });
 });
 
+// WORKING
 app.delete("/api/persons/:id", (req, res) => {
     const id = req.params.id;
 
