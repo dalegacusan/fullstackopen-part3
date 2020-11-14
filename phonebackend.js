@@ -3,22 +3,7 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
-const mongoose = require('mongoose');
-
-const DB_NAME = process.env.MONGO_DB_NAME;
-const DB_PASSWORD = process.env.MONGO_DB_PASSWORD;
-const URL = `mongodb+srv://phonebook-app:${DB_PASSWORD}@cluster0.87rwo.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
-
-mongoose.connect(URL, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true }).then(() => {
-    console.log("Successful Connection");
-});
-
-const personSchema = new mongoose.Schema({
-    name: String,
-    number: String
-});
-
-const Person = mongoose.model('Person', personSchema);
+const Person = require('./models/person');
 
 /*
     Static Folder is like a "route"
@@ -79,19 +64,16 @@ app.get("/info", (req, res) => {
 app.get("/api/persons", (req, res) => {
     Person.find({}).then(result => {
         res.json(result);
-
-        mongoose.connection.close();
     });
 });
 
 app.post("/api/persons", (req, res) => {
     const { name, number } = req.body;
 
-    const newPerson = {
-        id: Math.random() * 100000,
+    const newPerson = new Person({
         name,
         number
-    };
+    });
 
     // Error Handler IF NAME OR NUMBER IS MISSING
     if (!name) {
@@ -107,9 +89,10 @@ app.post("/api/persons", (req, res) => {
             // 409 - Conflict
             res.status(409).json({ error: "Name must be unique." });
         } else {
-            persons = [...persons, newPerson];
-
-            res.json(persons);
+            newPerson.save().then((savedPerson) => {
+                // savedPerson returns the document saved
+                res.json(savedPerson);
+            });
         }
 
     }
@@ -117,31 +100,40 @@ app.post("/api/persons", (req, res) => {
 });
 
 app.get("/api/persons/:id", (req, res) => {
-    const id = Number(req.params.id);
+    const id = req.params.id;
 
-    const person = persons.find(person => person.id === id);
-
-    if (person) {
-        res.json(person);
-    } else {
-        // 204 - No Content
-        res.status(204).end();
-    }
+    // Finds a single document by its _id field
+    // _id = id
+    Person.findById(id)
+        .then(person => {
+            if (person) {
+                res.json(person);
+            } else {
+                res.status(204).end();
+            }
+        });
 });
 
 app.delete("/api/persons/:id", (req, res) => {
-    const id = Number(req.params.id);
-    const person = persons.find(person => person.id === id);
+    const id = req.params.id;
 
-    if (person) {
-        res.json([...persons.filter(person => person.id !== id)]);
-    } else {
-        // 204 - No Content
-        res.status(204).end();
-    }
+    Person.findById({ _id: id }).then(person => {
+        if (person) {
+            Person.deleteOne({ _id: id }, (err, result) => {
+                if (err) {
+                    res.json({ error: "An error has occured in deleting" });
+                } else {
+                    console.log("Successful Deletion");
+                }
+            });
+        } else {
+            // 204 - No Content
+            res.status(204).end();
+        }
+    });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server started at Port ${PORT}`);
 });
