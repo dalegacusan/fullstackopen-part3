@@ -5,11 +5,11 @@ const URL = `mongodb+srv://phonebook-app:${DB_PASSWORD}@cluster0.87rwo.mongodb.n
 
 /*
                     node mongo.js <password> <NAME> <PHONE NUMBER>
-    process.argv()   (0)   (1)       (2)       (3)      (4)
+    process.argv[]   [0]   [1]       [2]       [3]      [4]
  */
 
 // Connect to MongoDB Database
-mongoose.connect(URL, { useNewUrlParser: true });
+mongoose.connect(URL, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
 
 // Create a Schema
 const personSchema = new mongoose.Schema({
@@ -25,10 +25,24 @@ const newPerson = new Person({
     number: process.argv[4]
 });
 
-// Add Entries
-newPerson.save().then(result => {
-    const { name, number } = result;
-    console.log(`added ${name} number ${number} to phonebook`);
-});
+// Check if password is the only parameter given
+if (process.argv[3] === undefined) {
+    // Print Entries
+    console.log("Phonebook:");
+    Person.find({}).then(result => {
+        result.forEach(person => {
+            console.log(person.name, person.number);
+        });
 
-// List Entries
+        mongoose.connection.close();
+    });
+} else {
+    // Add Entry
+    newPerson.save().then(result => {
+        const { name, number } = result;
+        console.log(`added ${name} number ${number} to phonebook`);
+        mongoose.connection.close();
+    });
+}
+
+
