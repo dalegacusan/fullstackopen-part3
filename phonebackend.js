@@ -3,6 +3,15 @@ const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
 
+/*
+    Static Folder is like a "route"
+        Check index.html
+        You can see that href="static/css"
+        The "build" folder has a folder named "static"
+        that has "css" folder aswell inside
+            It knows how to render index.html
+            because it is in the root of the "build" folder
+*/
 app.use(express.static('build'));
 
 app.use(cors());
