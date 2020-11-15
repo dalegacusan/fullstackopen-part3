@@ -90,8 +90,13 @@ app.get("/api/persons/:id", (req, res) => {
             if (person) {
                 res.json(person);
             } else {
-                res.status(204).end();
+                res.status(404).end();
             }
+        })
+        .catch((err) => {
+            console.log(err);
+            // 400 - Bad Request
+            res.status(400).send({error: 'Malformatted ID'});
         });
 });
 
