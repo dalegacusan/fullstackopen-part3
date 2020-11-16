@@ -1,9 +1,11 @@
 require('dotenv').config();
+
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
 const Person = require('./models/person');
+const axios = require('axios');
 
 /*
     Static Folder is like a "route"
@@ -58,29 +60,28 @@ app.post("/api/persons", (req, res) => {
     });
 
     // Error Handler IF NAME OR NUMBER IS MISSING
-    if (!name) {
-        res.status(404).json({ error: "Name is missing." });
-    } else if (!number) {
-        res.status(404).json({ error: "Number is missing." });
+    if (!name || !number) {
+        res.status(404).json({ error: "Name/Number is missing." });
     } else {
         // Error Handler IF NAME ALREADY EXISTS
-        Person.find({ name: name }).then(person => {
-            if (person.length > 0) {
-                res.status(409).json({ error: "Name must be unique." });
-            } else {
-                newPerson.save().then((savedPerson) => {
-                    // savedPerson returns the document saved
-                    res.json(savedPerson);
-                });
-            }
-        });
-
+        Person.find({ name })
+            .then(person => {
+                if (person.length > 0) {
+                    res.status(409).json(person);
+                } else {
+                    newPerson.save()
+                        .then((savedPerson) => {
+                            // savedPerson returns the document saved
+                            res.json(savedPerson);
+                        });
+                }
+            });
     }
 
 });
 
 // WORKING
-app.get("/api/persons/:id", (req, res) => {
+app.get("/api/persons/:id", (req, res, next) => {
     const id = req.params.id;
 
     // Finds a single document by its _id field
@@ -93,33 +94,46 @@ app.get("/api/persons/:id", (req, res) => {
                 res.status(404).end();
             }
         })
-        .catch((err) => {
-            console.log(err);
-            // 400 - Bad Request
-            res.status(400).send({error: 'Malformatted ID'});
-        });
+        .catch((err) => next(err));
+});
+
+app.put("/api/persons/:id", (req, res) => {
+    console.log("Did you reach me?");
+
+    const { name, number } = req.body;
+    console.log(req.body);
+
+    Person.findOneAndUpdate({ name: name }, { number }, { new: true }, (err, doc) => {
+        res.json(doc);
+    })
 });
 
 // WORKING
-app.delete("/api/persons/:id", (req, res) => {
+app.delete("/api/persons/:id", (req, res, next) => {
     const id = req.params.id;
 
-    Person.findById({ _id: id }).then(person => {
-        if (person) {
-            Person.deleteOne({ _id: id }, (err, result) => {
-                if (err) {
-                    res.json({ error: "An error has occured in deleting" });
-                } else {
-                    res.json(person);
-                }
-            });
-        } else {
-            // 204 - No Content
-            res.status(204).end();
-        }
-    });
+    Person.findByIdAndRemove(id)
+        .then(result => {
+            res.json(result);
+        })
+        .catch(err => {
+            next(err);
+        });
 
 });
+
+const errorHandler = (err, req, res, next) => {
+    console.error(err.message);
+
+    if (err.name === 'CastError') {
+        return res.status(400).send({ error: 'Malformatted ID' });
+    }
+
+    next(err);
+
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
