@@ -38,7 +38,7 @@ app.get("/", (req, res) => {
 app.get("/info", (req, res) => {
     Person.find({}).then(people => {
         res.send(
-            `<div><p>Phonebook has info for ${people.length} people</p><p>${new Date()}</p></div>`
+            `<div><p>Phonebook has info for <b>${people.length}</b> people</p><p>${new Date()}</p></div>`
         );
     });
 });
@@ -97,15 +97,23 @@ app.get("/api/persons/:id", (req, res, next) => {
         .catch((err) => next(err));
 });
 
+/*
+    TODO:
+    
+    Error Handling
+*/
 app.put("/api/persons/:id", (req, res) => {
     console.log("Did you reach me?");
 
-    const { name, number } = req.body;
-    console.log(req.body);
+    const { id, number } = req.body;
 
-    Person.findOneAndUpdate({ name: name }, { number }, { new: true }, (err, doc) => {
-        res.json(doc);
-    })
+    Person.findByIdAndUpdate(id, { number }, { new: true }, (err, doc) => {
+        if (err) {
+            res.json(err);
+        } else {
+            res.json(doc);
+        }
+    });
 });
 
 // WORKING
