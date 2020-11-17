@@ -5,7 +5,6 @@ const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
 const Person = require('./models/person');
-const axios = require('axios');
 
 /*
     Static Folder is like a "route"
@@ -59,24 +58,14 @@ app.post("/api/persons", (req, res) => {
         number
     });
 
-    // Error Handler IF NAME OR NUMBER IS MISSING
-    if (!name || !number) {
-        res.status(404).json({ error: "Name/Number is missing." });
-    } else {
-        // Error Handler IF NAME ALREADY EXISTS
-        Person.find({ name })
-            .then(person => {
-                if (person.length > 0) {
-                    res.status(409).json(person);
-                } else {
-                    newPerson.save()
-                        .then((savedPerson) => {
-                            // savedPerson returns the document saved
-                            res.json(savedPerson);
-                        });
-                }
-            });
-    }
+    newPerson.save()
+        .then((savedPerson) => {
+            // savedPerson returns the document saved
+            res.json(savedPerson);
+        })
+        .catch(err => {
+            res.status(409).json(err);
+        });
 
 });
 
@@ -97,19 +86,15 @@ app.get("/api/persons/:id", (req, res, next) => {
         .catch((err) => next(err));
 });
 
-/*
-    TODO:
-    
-    Error Handling
-*/
-app.put("/api/persons/:id", (req, res) => {
+// WORKING
+app.put("/api/persons/:id", (req, res, next) => {
     console.log("Did you reach me?");
 
     const { id, number } = req.body;
 
     Person.findByIdAndUpdate(id, { number }, { new: true }, (err, doc) => {
         if (err) {
-            res.json(err);
+            next(err);
         } else {
             res.json(doc);
         }
